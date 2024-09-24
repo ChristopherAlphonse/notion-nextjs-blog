@@ -69,28 +69,33 @@ export default function Home({ posts }) {
         {!posts.length && <p className="mb-4 text-gray-600">No posts found.</p>}
 
         {posts.map((post) => {
-          const postImage = post.properties['Cover Image'].files[0]
+          console.log(post)
+          const postImage = post.properties['Cover Image']?.files?.[0]
           const postImageUrl =
-            postImage?.type === 'file' ? postImage.file.url : postImage?.external.url
+            postImage?.type === 'file' ? postImage.file.url : postImage?.external?.url
+          const slug = post.properties.Slug?.rich_text?.[0]?.plain_text || 'default-slug' // Fallback slug
+          const title = post.properties['Content Title']?.title?.[0]?.text?.content || 'Untitled'
+
+          const description =
+            post.properties.Description?.rich_text?.[0]?.plain_text || 'No description available' // Fallback description
+
           return (
             <div key={post.id} className="mb-8 sm:flex">
               {postImageUrl && (
-                <Link
-                  className="mb-10 block w-full sm:mb-0 sm:mr-5 sm:w-1/3"
-                  href={`/${post.properties.Slug.rich_text[0].plain_text}`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img alt="" src={postImageUrl} />
+                <Link className="mb-10 block w-full sm:mb-0 sm:mr-5 sm:w-1/3" href={`/${slug}`}>
+                  <img
+                    alt=""
+                    src={postImageUrl}
+                    height={200} // Set an appropriate height
+                    width={300} // Set an appropriate width
+                    className="object-cover" // Ensure the image covers its container
+                  />
                 </Link>
               )}
-              <Link className="w-full" href={`/${post.properties.Slug.rich_text[0].plain_text}`}>
+              <Link className="w-full" href={`/${slug}`}>
                 <div className="w-full">
-                  <h3 className="w-full text-xl font-medium text-gray-900">
-                    {post.properties.Post.title[0].plain_text}
-                  </h3>
-                  <p className="text-gray-700">
-                    {post.properties.Description.rich_text[0].plain_text}
-                  </p>
+                  <h3 className="w-full text-xl font-medium text-gray-900">{title}</h3>
+                  <p className="text-gray-700">{description}</p>
                 </div>
               </Link>
             </div>
@@ -102,7 +107,7 @@ export default function Home({ posts }) {
 }
 
 export const getStaticProps = async () => {
-  const database = await getNotionData(process.env.NOTION_DATABASE_ID)
+  const database = await getNotionData()
 
   return {
     props: {

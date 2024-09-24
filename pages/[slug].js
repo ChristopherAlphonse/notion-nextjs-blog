@@ -2,8 +2,6 @@ import BlogLayout from '../layouts/BlogLayout'
 import { getNotionData, getPage, getBlocks } from '../lib/getNotionData'
 import { RenderBlocks } from '../components/ContentBlocks'
 
-const databaseId = process.env.NOTION_DATABASE_ID
-
 export default function Post({ page, blocks }) {
   if (!page || !blocks) {
     return <div />
@@ -20,7 +18,7 @@ export default function Post({ page, blocks }) {
       </span>
 
       <h1 className="mb-5 text-3xl font-bold tracking-tight text-black md:text-5xl">
-        {page.properties.Post.title[0].plain_text}
+        {page.properties['Content Title']?.title?.[0]?.text?.content || 'Untitled'}
       </h1>
 
       <RenderBlocks blocks={blocks} />
@@ -29,7 +27,7 @@ export default function Post({ page, blocks }) {
 }
 
 export const getStaticPaths = async () => {
-  const database = await getNotionData(databaseId)
+  const database = await getNotionData()
   return {
     paths: database.map((page) => ({
       params: {
@@ -42,7 +40,7 @@ export const getStaticPaths = async () => {
 
 export const getStaticProps = async (context) => {
   const { slug } = context.params
-  const database = await getNotionData(databaseId)
+  const database = await getNotionData()
   const filter = database.filter((blog) => blog.properties.Slug.rich_text[0].plain_text === slug)
   const page = await getPage(filter[0].id)
   const blocks = await getBlocks(filter[0].id)
